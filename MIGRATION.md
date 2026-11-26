@@ -137,7 +137,7 @@ Each pull request is made in a session of its own, in the same steps. chromosomi
      `npx github:js2264/chromokit check`;
    - the report: written from the test data and read back by `read_txt`; two samples' files through
      `uvx multiqc`, with their General Statistics rows merged; screenshots of the page;
-   - the log: a command run, its log's name and header checked.
+   - the log: a pipeline run, its log's name and header checked; a single command, that it writes none.
 7. **Open one pull request** into the default branch, as a draft, with a plain title: it is not one
    self-contained change. Its description lists:
    - the items done, and any left out, with the reason;
@@ -702,28 +702,33 @@ What it already does as the conventions say:
     `target`. `sync` writes `src/<package>/_report/`, and `check` verifies it.
   - **Tests, in chromokit:** write a sample report; read its `report.txt` back; run MultiQC on two
     samples' files, and check that their General Statistics rows merge.
-- [ ] **R-1 Logs.** S per repository.
-  - **hicstuff:** `hicstuff pipeline` already writes `<prefix>.hicstuff_<date>.log`, with the header. Its
-    other commands that write files (`digest`, `filter`, `rebin`, `subsample`, `convert`, …) start
-    writing theirs. No break.
-  - **metaTOR:** compliant: `<name>.metator_<date>.log`, the header and the closing line. Check that every
-    command that writes files writes its log.
-  - **metacooler:** new. The commands that write a map or a file write `<sample>.metacooler_<date>.log`
-    beside it, `<sample>` being the output's name. The commands that only read (`info`, `ls`, `tree`,
-    `show`, a `dump` to stdout) keep logging to stderr only. No break. In #35 (26 November): `cli/logging_utils.py`
-    and a `setup_logging` call in the commands; the log's name and header were not checked.
+- [ ] **R-1 Logs.** S per repository. **Only a pipeline writes a log file** (conventions § 11); a single
+  command logs to stderr, and a tool with no pipeline writes no log file.
+  - **hicstuff:** nothing to add. `hicstuff pipeline` already writes `<prefix>.hicstuff_<date>.log`, with
+    the header, and no other command writes one: `digest`, `filter`, `rebin`, `subsample`, `convert`, …
+    stay as they are.
+  - **metaTOR:** `metator pipeline` is compliant: `<name>.metator_<date>.log`, the header and the closing
+    line. Its single commands (`network`, `partition`, `validation`, `mge`, `host`, …) write one too
+    today. They keep it, and none is added: dropping them is a breaking change, for the maintainer to
+    decide for 2.0.0.
+  - **metacooler:** no log file, which is right: it has no pipeline, so every command logs to stderr
+    only. Done in #35 (`cli/logging_utils.py`'s `setup_logging`). Its `AGENTS.md` and
+    `docs/contributing.md` call this "an exception to § 11"; § 11 now makes it the rule, so reword them
+    in the next pull request there.
   - **instaGRAAL:** `log.py` opens `instagraal-<date>.log` in the working directory when it is imported,
-    even for `--help`. Instead, each command attaches `<sample>.instagraal_<date>.log` in its output
-    directory, with the header. Soft: the log moves and is renamed. The Makefile's `clean` target, which
-    removes `instagraal-*.log`, follows.
-  - **chromosight:** new. `detect`, `quantify` and `generate-config` write
-    `<prefix>.chromosight_<date>.log` beside their outputs. No break.
-  - **tinymapper:** `logs/<YYMMDD>-<sample>_<hash>.log` becomes
+    even for `--help`, so every command writes it. Instead, only `instagraal-endtoend` attaches
+    `<sample>.instagraal_<date>.log` in its output directory, with the header; the other commands
+    (`instagraal`, `-polish`, `-pre`, `-post`, `-refine`, `-stats`, `-test`) log to stderr only. Soft: the
+    log moves and is renamed, and a single command stops writing one. The Makefile's `clean` target,
+    which removes `instagraal-*.log`, follows.
+  - **chromosight:** nothing to add. It has no pipeline and writes no log file today; `detect`,
+    `quantify` and `generate-config` keep logging to stderr.
+  - **tinymapper:** a run is a workflow, so it keeps its log. `logs/<YYMMDD>-<sample>_<hash>.log` becomes
     `logs/<sample>.tinymapper_<YYYYMMDDHHMMSS>.log`. The run's hash moves into hicstuff's header,
     replacing tinymapper's own (`yy-mm-dd HH:MM:SS | [INFO] …`). Its `.err` and `_script.txt` follow the
     same name. Soft: scripts that read a log by its old name; a glob on `logs/*.log` still finds it.
-  - **chromosomix:** its command line writes `<stem>.chromosomix_<date>.log` beside what it writes.
-    Optional.
+  - **chromosomix:** a command line run that chains steps may write `<stem>.chromosomix_<date>.log`
+    beside its outputs; a single command writes none. Optional.
 - [ ] **R-2 metaTOR adopts the kit.** S, no.
   - Its template now extends the kit's base, and `report.py` calls the kit's writers.
   - `report.txt` (format 1), `report_mqc.yaml` (id `metator`, the same columns) and the page's content
@@ -798,11 +803,11 @@ Each of R-2 to R-6, and R-8, also brings:
 | Repository | Next release | What users may notice from this plan |
 |---|---|---|
 | chromokit | its next minor | the report kit and the copier template; a repository sees nothing until it syncs or applies them |
-| metacooler | 0.5.0 | the `docs` extra removed; logs; a report |
+| metacooler | 0.5.0 | the `docs` extra removed; a report |
 | hicstuff | 4.1.0 | a report; the `dev` and `docs` extras removed; new dependency floors; release notes on GitHub; the image built from the wheel, same tags |
 | metaTOR | 2.0.0 | 2.0's own changes, plus: the license declared as `GPL-3.0-or-later`; the `docs` extra removed; image tags `X.Y.Z` added |
-| instaGRAAL | 0.3.0 | the breaking changes of #49 and #53 (in its changelog), and #54's documentation move and removed `docs` extra; from this plan: the `test` and `dev` extras removed, dependency floors, the Python cap reviewed, the log moved, a report, images without the dev tools |
-| chromosight | 1.7.0 | Python ≥ 3.10 declared (≥ 3.6 before); dependency floors; docopt-ng; the documentation on GitHub Pages; a log; a report; no Dockerfile |
+| instaGRAAL | 0.3.0 | the breaking changes of #49 and #53 (in its changelog), and #54's documentation move and removed `docs` extra; from this plan: the `test` and `dev` extras removed, dependency floors, the Python cap reviewed, the log moved and written by `instagraal-endtoend` only, a report, images without the dev tools |
+| chromosight | 1.7.0 | Python ≥ 3.10 declared (≥ 3.6 before); dependency floors; docopt-ng; the documentation on GitHub Pages; a report; no Dockerfile |
 | chromosomix | 0.22.0 | the widgets on PyPI and R-universe |
 | tinymapper | 0.15.0 | conda-lock no longer installed with it; the `dev` extra removed; the log renamed; a report; a release workflow that waits for the tests; documentation |
 
@@ -825,7 +830,7 @@ The order of releases:
 | Build rewritten: setup.py → hatchling (chromosight), setuptools → hatchling (hicstuff), `src/` layout (chromosight) | 2 | A user, only if a file drops out of the wheel, which the snapshot (A) shows. Building from a checkout with `python setup.py …` stops working; `pip install .` works | **Yes,** except the end of `python setup.py …`, which comes with removing `setup.py` |
 | docopt → docopt-ng | chromosight | No one expected (same module, same parsing). Checked with the `--help` snapshot and the tests | **Yes:** optional, though docopt itself may stop working on a future Python |
 | `py.typed` added | hicstuff, metaTOR (optional) | Projects that type-check their calls into these packages get new diagnostics | **Yes:** add it only once the public API is annotated |
-| instaGRAAL's log: from `instagraal-<date>.log` in the working directory to `<sample>.instagraal_<date>.log` in the output directory | instaGRAAL | Scripts that read the log where it was. hicstuff's and metaTOR's logs already follow the convention, and metacooler and chromosight gain logs they did not have | **No,** if its logs are to follow the convention |
+| instaGRAAL's log: from `instagraal-<date>.log` in the working directory, written by every command, to `<sample>.instagraal_<date>.log` in the output directory, written by `instagraal-endtoend` only | instaGRAAL | Scripts that read the log where it was, and anyone who relied on a log from a single command (`instagraal`, `instagraal-polish`, …), which now logs to stderr. hicstuff's and metaTOR's logs already follow the convention; metacooler and chromosight write none, as they have no pipeline | **No,** if its logs are to follow the convention |
 | Reports: new `report` commands and files; metaTOR's page restyled on the kit | all | Readers see new pages. metaTOR's numbers, its `report.txt` and its MultiQC columns are unchanged | Nothing breaks: these are additions |
 | New runtime dependencies for the reports: jinja2 and pyyaml | hicstuff, instaGRAAL, chromosight, tinymapper; metacooler (jinja2) | Installs pull two small pure-Python packages, and the bioconda recipes add them | Nothing breaks |
 | tinymapper: conda-lock no longer installed with it | tinymapper | Anyone who used the `conda-lock` command a tinymapper install brought | **Yes,** but it is a development tool that tinymapper never imports |
