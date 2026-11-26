@@ -62,7 +62,7 @@ It is the first to apply chromokit's template, from its latest tag. Where the te
 
 Points to watch:
 - R-4, `metacooler report`: keep metacooler's layering (reading in io/, computing in ops/, the command in cli/cmd_report.py with its imports inside the function, listed in COMMAND_GROUPS and in docs/cli.md). jinja2 becomes a runtime dependency.
-- R-1: the commands that write a map or a file write <sample>.metacooler_<YYYYMMDDHHMMSS>.log beside it, with hicstuff's header; those that only read keep logging to stderr.
+- R-1: metacooler has no pipeline, so no command writes a log file: they all log to stderr (CONVENTIONS.md § 11). Nothing to add.
 - MC-6: CLAUDE.md and the Copilot files fold into AGENTS.md, under about 200 lines; the long procedures become docs pages it links to. Before deleting a file, check each of its rules against AGENTS.md and those pages: none may be lost.
 - X-1: the downstream job runs koszullab/hicstuff's and koszullab/metaTOR's tests (attached) against the pull request's metacooler. Run it once here.
 - 1.1: check whether metacooler is on bioconda (say so if anaconda.org is out of reach). If it is not, draft its recipe in the description (grayskull pypi metacooler, noarch: python).
@@ -83,7 +83,7 @@ Your pull request holds HS-1 to HS-6, R-1, R-3 and X-2, into master.
 
 Points to watch:
 - R-3, `hicstuff report`: it reads a run's output directory and never runs the analysis again; `hicstuff pipeline` writes it at its end. Its numbers are the ones `hicstuff stats` reads off the log. The report kit comes from `npx github:js2264/chromokit sync` and is never edited. jinja2 and pyyaml become runtime dependencies.
-- R-1: every command that writes files (digest, filter, rebin, subsample, convert, …) writes <prefix>.hicstuff_<YYYYMMDDHHMMSS>.log, as `hicstuff pipeline` already does.
+- R-1: nothing to add. `hicstuff pipeline` already writes its log, and no single command (digest, filter, rebin, …) writes one (CONVENTIONS.md § 11).
 - X-2: a weekly leg against metacooler's default branch, allowed to fail. metacooler's repository is private (js2264/metacooler is attached, so you can try the leg here). If it still is, ask me before adding any token; otherwise leave the leg out and say why.
 - HS-5: the image is built from the wheel, with the same tags as today.
 - Template fixes: list them in the description; do not edit chromokit.
@@ -104,7 +104,7 @@ Your pull request holds MT-1 to MT-5, R-1, R-2 and X-2, into master. metaTOR is 
 Points to watch:
 - R-2: the report adopts chromokit's kit. report.txt (format 1), report_mqc.yaml (id metator, the same columns) and the page's content stay as they are; only the page's look changes. Show it: one run's report.txt and report_mqc.yaml identical byte for byte before and after, and screenshots of the page before and after.
 - MT-1: the license expression becomes GPL-3.0-or-later.
-- R-1: check that every command that writes files writes its log.
+- R-1: `metator pipeline`'s log is compliant. metaTOR's single commands (network, partition, …) write a log too: keep them and add none, and say in the description that dropping them is the maintainer's decision for 2.0 (CONVENTIONS.md § 11).
 - X-2: a weekly leg against metacooler's default branch, allowed to fail. metacooler's repository is private (js2264/metacooler is attached, so you can try the leg here). If it still is, ask me before adding any token; otherwise leave the leg out and say why.
 - MT-7: draft the bioconda recipe for 2.0 in the description. It waits for metacooler on bioconda (1.1).
 - The release, 2.0.0, is prepared in docs/changelog.md with metaTOR's own 2.0 changes, not cut.
@@ -126,7 +126,7 @@ Your pull request holds IG-1 to IG-5, R-1 and R-5, into master.
 Points to watch:
 - GPU runs cost money. Never start a RunPod pod or a GPU workflow run yourself, even though this environment can reach RunPod's API: run the CPU tests here, and ask me before any GPU run.
 - IG-1: uv.lock has to resolve pycuda without CUDA ([[tool.uv.dependency-metadata]]), and the image installs the wheel with its gpu extra only.
-- R-1 is a soft change: log.py stops opening instagraal-<date>.log in the working directory when it is imported, even for --help; each command attaches <sample>.instagraal_<YYYYMMDDHHMMSS>.log in its output directory, with hicstuff's header. The changelog says so, and the Makefile's clean target follows.
+- R-1 is a soft change: log.py stops opening instagraal-<date>.log in the working directory when it is imported, even for --help, which today makes every command write it. Only instagraal-endtoend, the pipeline, attaches <sample>.instagraal_<YYYYMMDDHHMMSS>.log in its output directory, with hicstuff's header; the other commands log to stderr (CONVENTIONS.md § 11). The changelog says so, and the Makefile's clean target follows.
 - R-5, `instagraal-report`: a console script beside the others, which instagraal-endtoend runs at its end. It reads the run's output directory only.
 - Template fixes: list them in the description; do not edit chromokit.
 - The release, 0.3.0, is prepared in docs/changelog.md with #49's and #53's changes, not cut.
@@ -147,7 +147,7 @@ Points to watch:
 - The snapshot (appendix A) guards the rewrite. The command line is docopt's, so the script's fallback runs each command's --help: the usage text, the version and the installed files change only as the plan says.
 - No result changes (ground rule 2): run detect and quantify on the test data at the base and at the head, and compare their outputs.
 - R-6, `chromosight report`: a new docopt subcommand that reads a run's <prefix> outputs. jinja2 and pyyaml become runtime dependencies.
-- R-1: detect, quantify and generate-config write <prefix>.chromosight_<YYYYMMDDHHMMSS>.log beside their outputs.
+- R-1: chromosight has no pipeline, so it writes no log file and detect, quantify and generate-config keep logging to stderr: nothing to add (CONVENTIONS.md § 11).
 - CS-4: every page of the Read the Docs site finds its place on the new one. List the addresses that stop working once I delete the Read the Docs project (1.4).
 - Template fixes: list them in the description; do not edit chromokit.
 - The release, 1.7.0, is prepared in docs/changelog.md, not cut.
@@ -191,7 +191,7 @@ Points to watch:
 - CX-2: check that the name chromosomix is free on PyPI before wiring the widget's publishing, and say what the trusted publisher and R-universe need from me.
 - CX-4: CodeQL's default setup is a setting, which I turn on; the pull request adds the dependency review.
 - CX-5: AGENTS.md takes CLAUDE.md's rules. The ui-gallery skill (.claude/skills/ui-gallery) becomes a contributor page of the documentation site, which AGENTS.md links to. Then CLAUDE.md and .claude/skills/ go, and .gitignore lists CLAUDE.md. Commits become Conventional Commits that keep the SPECS section in the summary, starting with this pull request's.
-- R-1 and R-7 are optional: the command line's log, and parent_id: chromosomix in its MultiQC files. Do them only where SPECS allows without changing what users rely on, and update SPECS and CHANGELOG.md if you do.
+- R-1 and R-7 are optional: a log for a command line run that chains steps (a single command writes none), and parent_id: chromosomix in its MultiQC files. Do them only where SPECS allows without changing what users rely on, and update SPECS and CHANGELOG.md if you do.
 - Checks: npm run typecheck, npm test, npm run test:dev and npm run docs:build. If anything on screen changes, run the UI gallery and send me the screenshots.
 - The release, 0.22.0, is prepared in CHANGELOG.md, not cut.
 

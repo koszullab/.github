@@ -35,7 +35,7 @@ its file is the one to copy.
 | Releases | tag `vX.Y.Z`; PyPI trusted publishing; GitHub release from the changelog |
 | Conda | bioconda |
 | Containers | only where pip cannot install everything; tags `X.Y.Z` and `latest` |
-| Logs | `<sample>.<tool>_<YYYYMMDDHHMMSS>.log` beside a command's outputs, with hicstuff's header |
+| Logs | a pipeline writes `<sample>.<tool>_<YYYYMMDDHHMMSS>.log` beside its outputs, with hicstuff's header; a single command writes no log file, only stderr |
 | Reports | a `report` command in every tool, on metaTOR's model: `report.txt`, a MultiQC row and a page, from chromokit's report kit |
 | Agent instructions | `AGENTS.md`, and nothing else |
 | Shared files | the community files in the `.github` repositories; everything else in chromokit: the docs' look, the report kit, the copier template |
@@ -412,7 +412,7 @@ accepted: chromosight keeps docopt, instaGRAAL keeps click.
 - **The sample's name** is the run's prefix, as hicstuff and metaTOR take it. A command without one takes
   it from its main output's file name, without the extensions: metaTOR's report takes the map's. The
   sample's name names the log (§ 11) and the report (§ 12).
-- **Logs** go to stderr, and to the log file of § 11.
+- **Logs** go to stderr. A pipeline also writes the log file of § 11; a single command does not.
 - **A `report` command** in every tool writes the report of a run (§ 12).
 
 ## 11. Logs
@@ -420,17 +420,28 @@ accepted: chromosight keeps docopt, instaGRAAL keeps click.
 References: hicstuff's and metaTOR's logs; see `generate_log_header`, `log_end` and `log_file_name` in
 metaTOR's `cli.py`.
 
-- **Every command that writes outputs writes its log beside them,** as
-  `<sample>.<tool>_<YYYYMMDDHHMMSS>.log`.
-  - `<sample>` is the run's name (§ 10), and the time is when the command started, in local time.
+- **Only a pipeline writes a log file.** A pipeline is a command that runs several steps, start to end, as
+  one run: a workflow, an end-to-end run. They are `hicstuff pipeline`, `metator pipeline`,
+  `instagraal-endtoend` and a `tinymapper` run, the commands that write their report at their end
+  (§ 12). It writes its log beside its outputs, as `<sample>.<tool>_<YYYYMMDDHHMMSS>.log`.
+  - `<sample>` is the run's name (§ 10), and the time is when the pipeline started, in local time.
   - Without a sample name, the log is `<tool>_<YYYYMMDDHHMMSS>.log`.
   - hicstuff and metaTOR already name their logs this way.
   - A tool that keeps its logs in a `logs/` folder of its output directory keeps them there, as
     tinymapper does.
-- **A command that only reads** (`info`, `ls`, a dump to stdout) logs to stderr only.
-- **The command line attaches the file handler** when the command starts, in its output directory, never
+  - The pipeline's steps log into its file. A step writes no file of its own.
+- **A single command writes no log file,** whatever it writes (`digest`, `filter`, `rebin`, `detect`,
+  `annotate`, …), and a command that only reads (`info`, `ls`, a dump to stdout) neither. They log to
+  stderr only. A log file is the record of a whole run. One beside every output that users chain by hand
+  would scatter files through their directories, and every log file's name and header is interface that
+  then has to be kept (§ 18).
+  - **A tool with no pipeline writes no log file at all:** metacooler and chromosight. That is the
+    rule, not an exception to it.
+  - **A tool that already writes a log from a single command keeps it, and adds none:** metaTOR's
+    `network`, `partition`, … Dropping one is a breaking change (§ 18).
+- **The command line attaches the file handler** when the pipeline starts, in its output directory, never
   when a module is imported. Today, instaGRAAL opens `instagraal-<date>.log` in the working directory
-  on import, even for `--help`.
+  on import, even for `--help`, so every one of its commands writes it.
 - **The header is hicstuff's**, which metaTOR copies: the version, the date, the command line, one line
   per parameter (as given, or by default), then `---`:
 
@@ -450,9 +461,9 @@ metaTOR's `cli.py`.
   - the file always gets INFO and above;
   - `-v` adds DEBUG, to the file and to stderr;
   - `-q` limits stderr to warnings, never the file.
-- **The log is part of the interface** (§ 18). `hicstuff stats` reads it, and the report (§ 12) takes its
-  *Run* tab from the header. Its file name, the header's keys, and the lines a parser reads change only
-  with a changelog entry.
+- **A log is part of the interface** (§ 18). `hicstuff stats` reads it, and a pipeline's report (§ 12)
+  takes its *Run* tab from the header. Its file name, the header's keys, and the lines a parser reads
+  change only with a changelog entry.
 
 ## 12. Reports
 
@@ -865,6 +876,7 @@ Further rules:
 - **Report:** `chromosomix mapreport` is its report (§ 12). Its page, written in TypeScript, stays its
   own. Its MultiQC files keep their names (`_mqc.tsv`, `_mqc.json`) and their
   `chromosomix_` ids. They may add `parent_id: chromosomix`.
-- **Logs:** a command line run that writes outputs writes its log beside them, named as in § 11.
+- **Logs:** a command line run that chains steps (a pipeline) writes its log beside its outputs, named as
+  in § 11. A single command writes none.
 - **Sub-packages:** `widgets/python` and `widgets/r` follow the Python conventions where they apply, and
   carry the application's version.
