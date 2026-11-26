@@ -1,0 +1,59 @@
+name: Bug report
+description: A command that fails, or writes something wrong.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you ran it on, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: The command
+      description: The whole command line, or the Python code, that shows it.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: The log
+      description: >-
+        The log the command wrote beside its outputs (`<sample>.<tool>_<timestamp>.log`), or what it
+        printed, with the whole error. Paste it between two lines of three backticks, or drag the file
+        here.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What `<tool> --version` prints.
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: How you installed it
+      options:
+        - pip or uv, from PyPI
+        - conda or mamba, from bioconda
+        - A container image (Docker, Apptainer, Singularity)
+        - From a clone of the repository
+        - Something else
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: System
+      description: The operating system, and the Python version (`python --version`).
+      placeholder: Ubuntu 24.04, Python 3.12
+  - type: textarea
+    id: data
+    attributes:
+      label: The data
+      description: >-
+        What the input is (organism, size, format), and whether you can share it, or a small part of
+        it that shows the problem.

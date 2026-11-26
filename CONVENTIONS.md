@@ -38,7 +38,7 @@ its file is the one to copy.
 | Logs | `<sample>.<tool>_<YYYYMMDDHHMMSS>.log` beside a command's outputs, with hicstuff's header |
 | Reports | a `report` command in every tool, on metaTOR's model: `report.txt`, a MultiQC row and a page, from chromokit's report kit |
 | Agent instructions | `AGENTS.md`, and nothing else |
-| Shared files | `.github` repositories, a copier template, chromokit |
+| Shared files | the community files in the `.github` repositories; everything else in chromokit: the docs' look, the report kit, the copier template |
 
 To change a decision, change it here first, then in every repository.
 
@@ -63,6 +63,7 @@ To change a decision, change it here first, then in every repository.
 │   └── codecov.yml
 ├── pyproject.toml   uv.lock   .python-version
 ├── zensical.toml   chromokit.json   overrides/
+├── .copier-answers.yml            the answers given to chromokit's template (§ 21)
 ├── .pre-commit-config.yaml   .editorconfig   .gitattributes   .gitignore   .git-blame-ignore-revs
 ├── Dockerfile   .dockerignore     only under § 15
 ├── README.md   LICENSE   CITATION.cff   CONTRIBUTING.md
@@ -758,31 +759,40 @@ instaGRAAL's `docker.yml` for images in several variants.
 
 ## 21. Sharing, and instructions for agents
 
-- **The `.github` repositories.** `koszullab/.github` holds:
-  - the default community files, issue forms and pull-request template;
-  - the workflow templates;
-  - this file.
+- **The `.github` repositories hold the default community files:** the code of conduct, the security
+  policy, the support page, a generic `CONTRIBUTING.md`, the issue forms and the pull-request template.
+  - `koszullab/.github` serves koszullab's repositories, and also holds this file. `js2264/.github`
+    serves js2264's.
+  - GitHub takes them only from a public `.github` repository, and the issue forms and their
+    `config.yml` only from its `.github/ISSUE_TEMPLATE/` folder. It uses them in every repository of the
+    owner, public or private, that has no file of its own.
+  - A repository's own file replaces the default, and a repository with its own
+    `.github/ISSUE_TEMPLATE/` folder gets none of the default forms. So a repository keeps files of its
+    own only when it needs different ones, as chromosomix does.
+- **chromokit** (`js2264/chromokit`) holds everything else the repositories share, under one version:
+  - **the documentation's look,** checked by hash (`chromokit check`);
+  - **the report kit** (§ 12), which is metaTOR's report machinery, generalised:
+    - the page's base Jinja2 template, restyled with chromokit's look, which each tool's template
+      extends;
+    - the writers of metaTOR's `report.py`: `report_files`, `write_txt` and `read_txt`, `write_mqc`,
+      `write_html` and `write_report`.
 
-  `js2264/.github` holds the same community files for js2264's repositories.
-- **A copier template** holds what each repository fills in with its own names:
-  - the `pyproject.toml` blocks;
-  - pre-commit, `.editorconfig` and `.gitattributes`;
-  - the workflows, `dependabot.yml` and `codecov.yml`;
-  - the docs skeleton and `tests/test_docs.py`;
-  - `CITATION.cff` and `AGENTS.md`.
+    `chromokit sync` puts these in `src/<package>/_report/`, and `chromokit check` refuses local edits to
+    them, as it does for the docs;
+  - **the copier template** of what each repository fills in with its own names:
+    - the `pyproject.toml` blocks;
+    - pre-commit, `.editorconfig` and `.gitattributes`;
+    - the workflows, `dependabot.yml` and `codecov.yml`;
+    - the docs skeleton and `tests/test_docs.py`;
+    - `CITATION.cff` and `AGENTS.md`.
 
-  Each repository commits its `.copier-answers.yml` and takes changes with `copier update`.
-- **chromokit** holds the documentation's look, checked by hash (`chromokit check`). It also holds the
-  **report kit** (§ 12), which is metaTOR's report machinery, generalised:
-  - the page's base Jinja2 template, restyled with chromokit's look, which each tool's template
-    extends;
-  - the writers of metaTOR's `report.py`: `report_files`, `write_txt` and `read_txt`, `write_mqc`,
-    `write_html` and `write_report`.
-
-  `chromokit sync` puts these in `src/<package>/_report/`, and `chromokit check` refuses local edits to
-  them, as it does for the docs.
-- **Composite actions**, in a public repository, hold the steps several workflows share: extracting the
-  changelog section, smoke-testing the wheel. Publishing to PyPI stays in each repository (§ 14).
+    It lives in chromokit's `template/` folder, which chromokit's `copier.yml` names as its
+    `_subdirectory`, and its versions are chromokit's tags. A repository runs
+    `copier copy gh:js2264/chromokit .` once, commits its `.copier-answers.yml`, and takes changes with
+    `copier update`.
+- **The steps several workflows share,** extracting the changelog section and smoke-testing the wheel, are
+  written once in the template's workflows: `copier update` brings a fix to every repository, so no
+  composite action is needed. Publishing to PyPI stays in each repository's `release.yml` (§ 14).
 - **Instructions for coding agents: `AGENTS.md`, and nothing else.**
   - **One file at the root** holds everything an agent needs:
     - the commands (§ 4) and the layout;

@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation and help
+    url: https://github.com/koszullab/.github/blob/main/SUPPORT.md
+    about: Where each tool's documentation is, and how to ask a question.
+  - name: A security problem
+    url: https://github.com/koszullab/.github/blob/main/SECURITY.md
+    about: Report it privately, not in an issue.

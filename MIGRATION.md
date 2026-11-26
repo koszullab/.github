@@ -29,8 +29,9 @@ Each item has an **effort** and a **break** level:
   - **conda** or **docker:** affects only that channel.
 
 **Each repository gets one pull request**, holding all of its items. That covers its section of phases 2
-to 4, its log and report items (R-1 to R-7), and its cross-repository jobs (X-1, X-2). The phases list
-what goes in each pull request; "Order" says how the pull requests land.
+to 4, its log and report items (R-1 to R-8), and its cross-repository jobs (X-1, X-2). chromokit gets one
+too, before them, holding the report kit (R-0) and the template (2.T). The phases list what goes in each
+pull request; "Order" says how the pull requests land.
 
 ## Ground rules
 
@@ -51,8 +52,8 @@ second pull request.
 
 ```text
 1      Outside the seven repositories, in this order:
-       the .github repositories (0.1), chromokit's report kit (R-0),
-       the copier template (2.T), metacooler on bioconda (1.1)
+       the .github repositories (0.1); one chromokit pull request with the report kit (R-0)
+       and the copier template (2.T), and its release; metacooler on bioconda (1.1)
 2      One pull request per repository:
        metacooler first; then hicstuff and metaTOR; then instaGRAAL, chromosight, tinymapper and chromosomix
 3      Around each pull request: the settings it needs (0.2, 0.3, instaGRAAL's Pages source, the
@@ -72,11 +73,12 @@ Later  the end-to-end dataset (X-4), versioned documentation (X-5), benchmarks (
 | tinymapper | TM-1 to TM-6, R-1, R-8, X-2 | the kit and the template | 0.14.25 → **0.15.0** |
 
 Dependencies:
-- **The template (2.T) is built first,** from the reference files the conventions name. metacooler's pull
-  request, the first, validates it, and the later ones apply it. Building it after the repositories would
-  cost each of them a second pull request.
-- **The report kit (R-0) is built first too,** tested with metaTOR's current report as its sample. Its page
-  layout is settled before any repository uses it.
+- **The template (2.T) is built first, in chromokit,** from the reference files the conventions name.
+  metacooler's pull request, the first, validates it, and the later ones apply it. Building it after the
+  repositories would cost each of them a second pull request.
+- **The report kit (R-0) is built first too, in the same chromokit pull request,** tested with metaTOR's
+  current report as its sample. Its page layout is settled before any repository uses it. A chromokit
+  release then carries both, and every repository's pull request starts from that tag.
 - **metacooler's pull request goes first:** it is upstream of hicstuff and metaTOR, and validates the
   template.
 - **instaGRAAL's pull request lands after #53 and #54.**
@@ -85,17 +87,67 @@ Dependencies:
 - **Each pull request is large,** the report commands especially. It is reviewed as a whole, and
   squash-merged (metaTOR's rule).
 
+## Making each pull request
+
+Each pull request is made in a session of its own, in the same steps. chromosomix's skips steps 3 and
+4, and the Python checks (conventions § 23).
+
+1. **Read first:** `CONVENTIONS.md`; this plan's ground rules, "Order" and the repository's section;
+   its rows in "Releases" and "What users may notice"; the appendices. Then the repository's own
+   instructions for agents (`CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`): they hold until
+   the pull request replaces them.
+2. **Check the plan against the head of the default branch.** The plan was written from the commits at
+   its top. An item already done is skipped, an item whose ground has moved is checked again, and
+   anything that contradicts the plan is reported rather than forced.
+3. **Snapshot the base** (appendix A) before changing anything.
+4. **Apply the template** from chromokit's latest tag (2.T): `uvx copier copy --vcs-ref <tag>
+   --data-file <answers> --overwrite gh:js2264/chromokit .`, then review `git diff` file by file.
+   - The repository's own version stays where the conventions name it as the reference, or where the
+     difference is a deviation, written down where it is.
+   - A difference that the template should absorb goes to chromokit's next patch release. metacooler's
+     session, the first, fixes chromokit itself, in one pull request there; the later ones list theirs in
+     their pull request's description, so that no two sessions edit chromokit at once.
+5. **Then the items,** in the plan's order, one or a few Conventional Commits each.
+6. **Verify at the head,** and say in the pull request how:
+   - the test suite;
+   - coverage: 80 % of the changed lines (`diff-cover` against the default branch), and the overall
+     figure, with how far it is from 80 % where it is below;
+   - the snapshot (appendix A): only the intended differences, each one listed;
+   - `uv lock --check`, ruff, ty, pre-commit, actionlint and zizmor;
+   - the documentation: `uv run --locked --only-group docs zensical build --clean --strict`, then
+     `npx github:js2264/chromokit check`;
+   - the report: written from the test data and read back by `read_txt`; two samples' files through
+     `uvx multiqc`, with their General Statistics rows merged; screenshots of the page;
+   - the log: a command run, its log's name and header checked.
+7. **Open one pull request** into the default branch, as a draft, with a plain title: it is not one
+   self-contained change. Its description lists:
+   - the items done, and any left out, with the reason;
+   - the snapshot's differences, and what users may notice;
+   - what only the maintainer can do: the settings (0.2), the secrets (0.3), the Pages source, the
+     trusted publisher, Read the Docs (1.4), the bioconda recipe (drafted in the description), and the
+     release (`bump-my-version`, then the tag).
+8. **Never** push to the default branch, tag, publish, or change a repository's settings. Ask before
+   anything that costs money (instaGRAAL's GPU runs), and before deleting anything the plan does not
+   name.
+
 ## Phase 0: shared scaffolding
 
-- [ ] **0.1 Create `koszullab/.github` and `js2264/.github`**, both public. M, no.
-  - Contents: `CODE_OF_CONDUCT.md`, `SECURITY.md`, `SUPPORT.md`, a generic `CONTRIBUTING.md`,
-    `ISSUE_TEMPLATE/` (bug, feature, `config.yml`) and `pull_request_template.md` (the checklist of
-    conventions § 16).
-  - koszullab's also holds `workflow-templates/` and `CONVENTIONS.md`, and this plan until the last pull
-    request merges.
+- [ ] **0.1 Fill `koszullab/.github` and `js2264/.github`.** S, no.
+  - Both exist and are public; koszullab's holds `CONVENTIONS.md` and this plan, which stays there until
+    the last pull request merges.
+  - Both get the same community files: `CODE_OF_CONDUCT.md`, `SECURITY.md`, `SUPPORT.md`, a generic
+    `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/` (bug, feature, `config.yml`) and
+    `.github/pull_request_template.md` (the checklist of conventions § 16). Each owner's files name its
+    own issues and contact.
   - Start from chromosomix's files, made generic. Its bug form asks app-specific questions; the generic
     one asks for the version, the install channel (pip, conda, Docker), the command and the log.
-  - These defaults apply to every public repository that has no file of its own.
+  - **Pushed by hand.** A cloud session cannot attach a repository whose name starts with a dot: the
+    files are prepared in a session and pushed by the maintainer. Sessions read them through an
+    anonymous clone (`git clone https://github.com/koszullab/.github`).
+  - These defaults apply to every repository of the owner, public or private, without a file of its
+    own. Today chromosomix alone has its own code of conduct, security policy, issue forms and
+    pull-request template, and keeps them (CX-6). Every repository keeps, or gets, its own
+    `CONTRIBUTING.md` (conventions § 17), so the default one serves only the others.
 - [ ] **0.2 Audit each repository's settings** against conventions § 19, which the checkouts don't show.
   S per repository. Check:
   - merge methods, auto-merge, deleting head branches;
@@ -313,19 +365,25 @@ Dependencies:
   - Require `metacooler>=0.4.0`, pysam, pyrodigal and pyhmmer.
   - Drop hicstuff, pypairix, pyfastx, prodigal and hmmer.
 
-### 2.T Build the template (L, no)
+### 2.T Build the template, in chromokit (L, no)
 
-Built before the repositories' pull requests (see "Order"), from the reference files the conventions name:
+Built before the repositories' pull requests (see "Order"), in the same chromokit pull request as the
+report kit (R-0), from the reference files the conventions name:
 - metaTOR's workflows and `pyproject.toml` blocks;
 - hicstuff's install checks;
 - metacooler's `bounds` job;
 - instaGRAAL's `docs.yml`.
 
 `tests/test_docs.py` exists in three copies, and chromokit 0.1.0 in three repositories.
-- **Build a copier template of what the repositories share:**
+- **Where:** chromokit's `template/` folder, named by a `copier.yml` at chromokit's root
+  (`_subdirectory: template`). Its versions are chromokit's tags, so one chromokit release carries the
+  docs' look, the report kit and the template together. A repository applies it with
+  `copier copy gh:js2264/chromokit .`, and later `copier update`.
+- **What it holds:**
   - the `pyproject.toml` blocks and tool configuration;
   - pre-commit, `.editorconfig`, `.gitattributes`;
-  - the workflows, `dependabot.yml`, `codecov.yml`;
+  - the workflows, `dependabot.yml`, `codecov.yml`, with the steps they share written once (the
+    changelog section, B.2; the wheel's smoke test);
   - the docs skeleton, `tests/test_docs.py`, `CITATION.cff`, `AGENTS.md`.
 - **Its questions:**
   - distribution name, import package and command;
@@ -335,8 +393,13 @@ Built before the repositories' pull requests (see "Order"), from the reference f
   - compiled dependencies (adds the `wheels` job);
   - nothing needed outside PyPI (an empty `PATH` in `install`);
   - GPU.
+- **Tests, in chromokit:** render the template with each Python repository's answers (all but
+  chromosomix), then check what it renders: actionlint and zizmor on the workflows, and `uv lock` and
+  `uv run pytest` in a sample package rendered from it.
 - **Apply it in each repository's pull request** (`.copier-answers.yml`), starting with metacooler's,
   which validates it. Each difference becomes a template option, or a deviation written down where it is.
+  A difference found after chromokit's release goes into a chromokit patch release, which the
+  repositories take with `copier update` in their own pull request.
 
 ## Phase 3: instaGRAAL, chromosight and tinymapper
 
@@ -577,6 +640,8 @@ What it already does as the conventions say:
   metacooler pull request. M, no.
 - [ ] **X-2 A weekly leg against an upstream's default branch,** allowed to fail: hicstuff and metaTOR
   against metacooler's, tinymapper against hicstuff's. S, no.
+  - metacooler's repository is private (26 November 2026). The legs against it need it public, or a
+    GitHub App token that can read it (conventions § 19).
 - [ ] **X-3 The sdist contract:** in MC-5.
 - [ ] **X-4 An end-to-end toy dataset.** L, no. Reads, run through hicstuff, then metaTOR, then
   chromosomix's fixtures. Stored as a release asset, and run weekly.
@@ -586,7 +651,7 @@ What it already does as the conventions say:
 
 ## Phase 6: logs and reports
 
-- [ ] **R-0 The report kit, in chromokit.** L, no.
+- [ ] **R-0 The report kit, in chromokit,** in the same pull request as the template (2.T). L, no.
   - **Taken from metaTOR's `report.py` and `templates/report.html.j2`,** generalised:
     - the base Jinja2 template of the page, with metaTOR's header, navigation, cards, sortable and
       filterable tables, *Download CSV* buttons, plotly plots and footer, restyled with chromokit's look;
@@ -693,6 +758,7 @@ Each of R-2 to R-6, and R-8, also brings:
 
 | Repository | Next release | What users may notice from this plan |
 |---|---|---|
+| chromokit | its next minor | the report kit and the copier template; a repository sees nothing until it syncs or applies them |
 | metacooler | 0.5.0 | the `docs` extra removed; logs; a report |
 | hicstuff | 4.1.0 | a report; the `dev` and `docs` extras removed; new dependency floors; release notes on GitHub; the image built from the wheel, same tags |
 | metaTOR | 2.0.0 | 2.0's own changes, plus: the license declared as `GPL-3.0-or-later`; the `docs` extra removed; image tags `X.Y.Z` added |
@@ -704,7 +770,8 @@ Each of R-2 to R-6, and R-8, also brings:
 With one pull request per repository, each repository's logs and report ship in the release above.
 
 The order of releases:
-- metacooler releases first.
+- chromokit releases first, with the kit and the template.
+- metacooler releases next.
 - hicstuff and metaTOR follow.
 - instaGRAAL and chromosight do not depend on the others.
 - Bioconda follows every release whose run dependencies changed.
