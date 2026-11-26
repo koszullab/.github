@@ -7,13 +7,14 @@ notice. It was written from these commits, on 26 November 2026:
 |---|---|
 | chromosight | `2e6bf59` |
 | hicstuff | `3cf59f9` |
-| instaGRAAL | `e4906fc`, with #53 and #54 taken as merged (`42d23ac`) |
+| instaGRAAL | `e4906fc`, with #53 and #54 taken as merged (`42d23ac`); they merged as `07b36f0` and `6031add` |
 | metaTOR | `af54142` |
 | metacooler | `8c650e7` |
 | chromosomix | `60d32e6` |
 | tinymapper | `cf09301` |
 
-For instaGRAAL, two open pull requests are taken as merged:
+For instaGRAAL, two open pull requests were taken as merged. Both have merged since (26 November), squashed
+into `master`, whose head is `6031add`:
 - **#54** moves the documentation to Zensical on GitHub Pages;
 - **#53**, which #54 is stacked on, adds `instagraal-refine` and makes pycuda a `gpu` extra.
 
@@ -32,6 +33,24 @@ Each item has an **effort** and a **break** level:
 to 4, its log and report items (R-1 to R-8), and its cross-repository jobs (X-1, X-2). chromokit gets one
 too, before them, holding the report kit (R-0) and the template (2.T). The phases list what goes in each
 pull request; "Order" says how the pull requests land.
+
+## Status, 26 November 2026
+
+Checked against the repositories' heads. The checkboxes below follow it. The settings items (0.2, 0.3) and
+what only the maintainer can do (releases, PyPI, bioconda, Zenodo) don't show in a checkout, and are left
+as they were.
+
+| Step | State |
+|---|---|
+| `.github` repositories (0.1) | Done |
+| chromokit: the report kit (R-0) and the template (2.T) | Done: v0.2.0, then v0.2.1 with the fixes that metacooler's pull request found (#2) |
+| metacooler (MC-1 to MC-6, R-1, R-4, X-1) | Pull request #35 merged into `devel` (`79f75e4`), then chromokit 0.2.1 taken (`f50bd8b`). **0.5.0 is not released**, and MC-5's Zenodo step is open |
+| instaGRAAL | #53 and #54 merged. Its pull request has not started |
+| hicstuff, metaTOR, chromosight, tinymapper, chromosomix | Not started: each default branch is still at the commit this plan was written from |
+| 1.1 metacooler on bioconda | A recipe exists in js2264's fork (0.2.0 added on 17 November, 0.4.0 on 26 November); not confirmed in bioconda itself |
+
+**Next:** sessions 3 to 8 of `SESSION_PROMPTS.md` can all start, hicstuff and metaTOR (3 and 4) first.
+Release metacooler 0.5.0 before hicstuff and metaTOR.
 
 ## Ground rules
 
@@ -132,7 +151,7 @@ Each pull request is made in a session of its own, in the same steps. chromosomi
 
 ## Phase 0: shared scaffolding
 
-- [ ] **0.1 Fill `koszullab/.github` and `js2264/.github`.** S, no.
+- [x] **0.1 Fill `koszullab/.github` and `js2264/.github`.** S, no.
   - Both exist and are public; koszullab's holds `CONVENTIONS.md` and this plan, which stays there until
     the last pull request merges.
   - Both get the same community files: `CODE_OF_CONDUCT.md`, `SECURITY.md`, `SUPPORT.md`, a generic
@@ -148,6 +167,9 @@ Each pull request is made in a session of its own, in the same steps. chromosomi
     own. Today chromosomix alone has its own code of conduct, security policy, issue forms and
     pull-request template, and keeps them (CX-6). Every repository keeps, or gets, its own
     `CONTRIBUTING.md` (conventions § 17), so the default one serves only the others.
+  - **Done 26 November:** both repositories have the files on their default branch. Each also holds its
+    hand-push bundle at its root (`koszullab-dotgithub.zip`, `js2264-dotgithub.zip`), committed by
+    mistake: delete them.
 - [ ] **0.2 Audit each repository's settings** against conventions § 19, which the checkouts don't show.
   S per repository. Check:
   - merge methods, auto-merge, deleting head branches;
@@ -164,6 +186,10 @@ Each pull request is made in a session of its own, in the same steps. chromosomi
 - [ ] **1.1 Get metacooler onto bioconda.** M, conda.
   - Check first: anaconda.org could not be reached from where this plan was written. metacooler's docs
     give no conda install, and metaTOR's `pyproject.toml` says to "submit its recipe if it is not" there.
+  - **26 November:** js2264's fork of bioconda-recipes has a `recipes/metacooler` (`noarch: python`): 0.2.0
+    on the branch `js/update-metacooler` (17 November), 0.4.0 on `js/metacooler-0.4.0`. Whether either
+    merged into bioconda is not known: anaconda.org is still unreachable from a session. On that branch,
+    hicstuff's recipe is 3.3.0 and metaTOR's 1.3.10.
   - Until it is there, the conda packages of hicstuff 4.0.0, already on PyPI, and of metaTOR 2.0 cannot
     be built: both require `metacooler>=0.4.0`.
   - Recipe: start from `grayskull pypi metacooler`, `noarch: python`. The run dependencies are those of
@@ -185,7 +211,7 @@ Each pull request is made in a session of its own, in the same steps. chromosomi
   Merge by hand at first: its test job rebuilds fixtures from PyPI packages and runs long.
 - [ ] **1.4 Delete Read the Docs.** S, yes (links).
   - **instaGRAAL:** delete the `instagraal` project on Read the Docs once #54 is merged and its site is on
-    GitHub Pages.
+    GitHub Pages. #54 merged on 26 November: check that the Pages site is live, then delete.
   - **chromosight:** its site serves its last build, and cannot rebuild: there is no `.readthedocs.yaml`,
     and its configuration relies on recommonmark, which is deprecated. Delete the project once CS-4 has
     put the site on GitHub Pages.
@@ -195,7 +221,12 @@ Each pull request is made in a session of its own, in the same steps. chromosomi
 
 ### metacooler, next release 0.5.0
 
-- [ ] **MC-1 CI.** M, no.
+Pull request #35 merged into `devel` on 26 November (`79f75e4`), followed by two commits taking chromokit
+0.2.1 (`9408641`, `f50bd8b`). Checked against `devel`: every item below is in it, except what MC-5 says.
+The repository is `js2264/metacooler`. **0.5.0 is not released:** `current_version` is still 0.4.0, and
+the latest tag is `v0.4.0`.
+
+- [x] **MC-1 CI.** M, no.
   - **`lint`** job, as metaTOR's:
     - `uv lock --check`;
     - the locked ruff (`check`, `format --check`);
@@ -214,10 +245,10 @@ Each pull request is made in a session of its own, in the same steps. chromosomi
   - **`retry-jobs-without-runner.yml`**, from hicstuff, for the macOS leg.
   - **Push triggers:** `devel` only. ci.yml and docs.yml also name a `main` branch, which does not exist.
   - **`changelog.yml`** (B.3).
-- [ ] **MC-2 Dependabot**, from hicstuff (`dependabot.yml` and `dependabot-automerge.yml`). S, no. Its
+- [x] **MC-2 Dependabot**, from hicstuff (`dependabot.yml` and `dependabot-automerge.yml`). S, no. Its
   first pull request brings the actions up to date: checkout 4 and 5, setup-uv 5, codecov 6, Pages 4,
   action-gh-release 2.
-- [ ] **MC-3 Packaging and tooling.** S, soft.
+- [x] **MC-3 Packaging and tooling.** S, soft.
   - The `docs` extra becomes a dependency group.
     - docs.yml builds from the group alone:
       `uv run --locked --only-group docs zensical build --clean`, as instaGRAAL's does.
@@ -233,7 +264,7 @@ Each pull request is made in a session of its own, in the same steps. chromosomi
     - `.python-version`.
   - Codecov: `project` at 80 %, where it is informational today, and `patch` at 80 % (conventions § 13).
   - Run the snapshot (A) before and after.
-- [ ] **MC-4 Documentation.** M, no.
+- [x] **MC-4 Documentation.** M, no.
   - **chromokit:**
     - run `npx github:js2264/chromokit sync`;
     - in `docs/index.md`, rename the 14 `mc-` classes to `cx-`: the kit's stylesheet has every one;
@@ -248,7 +279,8 @@ Each pull request is made in a session of its own, in the same steps. chromosomi
   - **New pages:**
     - `contributing.md`, from the README's *Releasing* section and the commands in CLAUDE.md;
     - `citation.md`, citing the software until there is a paper.
-- [ ] **MC-5 Changelog, citation and release.** S, no.
+- [ ] **MC-5 Changelog, citation and release.** S, no. Merged in #35, except Zenodo's integration (a
+  setting, not checked) and the release itself.
   - **Changelog headings:**
     - each `## X.Y.Z - date` → `## [X.Y.Z] - date`; `## Unreleased` stays;
     - `## 0.1.0` → `## [0.1.0]`, deleting the `---` line above it;
@@ -259,7 +291,7 @@ Each pull request is made in a session of its own, in the same steps. chromosomi
     - smoke-test the wheel;
     - check the sdist contract: `tar -tzf dist/*.tar.gz | grep -q '/tests/data/'`.
   - **`CITATION.cff`**, with its bump-my-version entry. Turn on Zenodo's GitHub integration.
-- [ ] **MC-6 Agent instructions.** S, no.
+- [x] **MC-6 Agent instructions.** S, no.
   - **One `AGENTS.md`** takes the content of CLAUDE.md (122 lines) and of the Copilot files (979 lines),
     which largely repeat it:
     - `.github/copilot-instructions.md`, which still says "Alpha (v0.1.0)";
@@ -367,6 +399,10 @@ Each pull request is made in a session of its own, in the same steps. chromosomi
 
 ### 2.T Build the template, in chromokit (L, no)
 
+**Done 26 November:** chromokit v0.2.0 (`63ecc3d`) carries the template and the report kit (R-0); v0.2.1
+(`3d3721c`) adds the template fixes that metacooler's pull request found (#2). The repositories' pull
+requests start from v0.2.1.
+
 Built before the repositories' pull requests (see "Order"), in the same chromokit pull request as the
 report kit (R-0), from the reference files the conventions name:
 - metaTOR's workflows and `pyproject.toml` blocks;
@@ -407,7 +443,7 @@ Apply the template to each, then do the items below.
 
 ### instaGRAAL, next release 0.3.0
 
-#53 and #54 already do much of what the conventions ask:
+#53 and #54, merged on 26 November (`07b36f0`, `6031add`), already do much of what the conventions ask:
 - **Documentation:** zensical and chromokit on GitHub Pages. `docs.yml` builds every pull request
   (`--strict`) from the `docs` dependency group alone, and deploys from `master`. `tests/test_docs.py`
   keeps the CLI reference honest, and `doc/` is deleted.
@@ -636,13 +672,14 @@ What it already does as the conventions say:
 
 ## Phase 5: across repositories
 
-- [ ] **X-1 metacooler's `downstream` job** (B.5): hicstuff's and metaTOR's tests, run against each
-  metacooler pull request. M, no.
+- [x] **X-1 metacooler's `downstream` job** (B.5): hicstuff's and metaTOR's tests, run against each
+  metacooler pull request. M, no. Done in #35, allowed to fail (`continue-on-error`).
 - [ ] **X-2 A weekly leg against an upstream's default branch,** allowed to fail: hicstuff and metaTOR
   against metacooler's, tinymapper against hicstuff's. S, no.
-  - metacooler's repository is private (26 November 2026). The legs against it need it public, or a
+  - metacooler's repository was private when this plan was written (26 November 2026). It was public when
+    checked later that day, so the legs against it need no token. If it goes private again, they need a
     GitHub App token that can read it (conventions § 19).
-- [ ] **X-3 The sdist contract:** in MC-5.
+- [x] **X-3 The sdist contract:** in MC-5. Done in #35: `release.yml` checks for `tests/data` in the sdist.
 - [ ] **X-4 An end-to-end toy dataset.** L, no. Reads, run through hicstuff, then metaTOR, then
   chromosomix's fixtures. Stored as a release asset, and run weekly.
 - [ ] **X-5 Versioned documentation for the zensical sites.** L, no. A copy per release, `/dev/` and
@@ -651,7 +688,8 @@ What it already does as the conventions say:
 
 ## Phase 6: logs and reports
 
-- [ ] **R-0 The report kit, in chromokit,** in the same pull request as the template (2.T). L, no.
+- [x] **R-0 The report kit, in chromokit,** in the same pull request as the template (2.T). L, no. Done:
+  chromokit v0.2.0.
   - **Taken from metaTOR's `report.py` and `templates/report.html.j2`,** generalised:
     - the base Jinja2 template of the page, with metaTOR's header, navigation, cards, sortable and
       filterable tables, *Download CSV* buttons, plotly plots and footer, restyled with chromokit's look;
@@ -672,7 +710,8 @@ What it already does as the conventions say:
     command that writes files writes its log.
   - **metacooler:** new. The commands that write a map or a file write `<sample>.metacooler_<date>.log`
     beside it, `<sample>` being the output's name. The commands that only read (`info`, `ls`, `tree`,
-    `show`, a `dump` to stdout) keep logging to stderr only. No break.
+    `show`, a `dump` to stdout) keep logging to stderr only. No break. In #35 (26 November): `cli/logging_utils.py`
+    and a `setup_logging` call in the commands; the log's name and header were not checked.
   - **instaGRAAL:** `log.py` opens `instagraal-<date>.log` in the working directory when it is imported,
     even for `--help`. Instead, each command attaches `<sample>.instagraal_<date>.log` in its output
     directory, with the header. Soft: the log moves and is renamed. The Makefile's `clean` target, which
@@ -700,7 +739,7 @@ What it already does as the conventions say:
   - **Then** the distance law, the matrix's bins, and the restriction fragments.
   - **MultiQC's General Statistics:** pairs, mapped share, duplicate share, trans ratio.
   - **Dependencies:** jinja2 and pyyaml are new for hicstuff.
-- [ ] **R-4 `metacooler report`.** L, no.
+- [x] **R-4 `metacooler report`.** L, no. Done in #35.
   - Reads a map: a `.metacool`, or an entry of a collection.
   - **Content:**
     - genomes, contigs, bins and contacts;
@@ -770,8 +809,8 @@ Each of R-2 to R-6, and R-8, also brings:
 With one pull request per repository, each repository's logs and report ship in the release above.
 
 The order of releases:
-- chromokit releases first, with the kit and the template.
-- metacooler releases next.
+- chromokit releases first, with the kit and the template (done: v0.2.0, v0.2.1).
+- metacooler releases next (0.5.0: merged, not yet released).
 - hicstuff and metaTOR follow.
 - instaGRAAL and chromosight do not depend on the others.
 - Bioconda follows every release whose run dependencies changed.
